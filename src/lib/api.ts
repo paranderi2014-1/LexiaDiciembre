@@ -57,7 +57,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const payload = parseBody(await res.text());
   if (!res.ok) {
     const message =
-      (payload && typeof payload === "object" && ("detail" in payload || "message" in payload")
+      (payload && typeof payload === "object" && ("detail" in payload || "message" in payload)
         ? String((payload as Record<string, unknown>).detail ?? (payload as Record<string, unknown>).message)
         : res.statusText) || `Error ${res.status}`;
     throw new ApiError(res.status, message);

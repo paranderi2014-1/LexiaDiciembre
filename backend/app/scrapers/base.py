@@ -17,7 +17,7 @@ from bs4 import BeautifulSoup
 
 from app.core.config import settings
 
-USER_AGENT = "LexIAParaguayBot/1.0 (+https://www.lexiapy.com; indexación jurídica oficial)"
+USER_AGENT = "LexIAParaguayBot/1.0 (+https://www.lexiapy.com; indexacion juridica oficial)"
 
 _YEAR = re.compile(r"(19|20)\d{2}")
 _NUMBER = re.compile(r"(?:N[°º]|Nro\.?|Núm\.?)\s*([0-9][0-9./-]*)", re.IGNORECASE)

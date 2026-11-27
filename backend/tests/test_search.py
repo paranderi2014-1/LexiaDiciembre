@@ -84,5 +84,10 @@ async def test_busqueda_textual_sin_vectores(db, corpus):
 
 
 async def test_filtro_por_tipo_excluye_otros_documentos(db, corpus):
+    documento, *_ = corpus
     results = await hybrid_search(db, "honorarios", _vector(1.0), tipo="jurisprudencia")
-    assert results == []
+    # El filtro por tipo debe excluir el documento del corpus (tipo "ley");
+    # no asumimos lista vacía porque la base puede contener jurisprudencia real.
+    assert not any(r.documento_id == documento.id for r in results), (
+        "el filtro por tipo debe excluir el documento ajeno al tipo solicitado"
+    )
