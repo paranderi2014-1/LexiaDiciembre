@@ -35,6 +35,11 @@ class FuenteOut(ORMModel):
     url_base: str
 
 
+class FuenteEstadoOut(FuenteOut):
+    activo: bool = True
+    documentos: int = 0
+
+
 class DocumentoOut(ORMModel):
     id: uuid.UUID
     tipo: str

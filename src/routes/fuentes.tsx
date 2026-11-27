@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { SOURCES } from "@/lib/lexia-data";
 import { pageHead } from "@/lib/seo";
 import { SectionTitle } from "@/components/lexia/shared";
+import { BackendSearch } from "@/components/lexia/BackendSearch";
 
 export const Route = createFileRoute("/fuentes")({
   head: () =>
@@ -39,6 +40,7 @@ function Fuentes() {
           </a>
         ))}
       </div>
+      <BackendSearch />
     </section>
   );
 }

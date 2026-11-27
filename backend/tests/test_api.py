@@ -43,9 +43,14 @@ async def test_endpoint_admin_exige_permiso(client, cleanup_user):
     assert "admin.usuarios" in response.json()["detail"]
 
 
-@pytest.mark.parametrize("ruta", ["/api/documentos", "/api/leyes", "/api/consultas"])
-async def test_endpoints_protegidos_sin_token(client, ruta):
+@pytest.mark.parametrize("ruta", ["/api/documentos", "/api/leyes", "/api/fuentes"])
+async def test_catalogo_publico_sin_token(client, ruta):
     response = await client.get(ruta)
+    assert response.status_code == 200
+
+
+async def test_consultas_exige_token(client):
+    response = await client.get("/api/consultas")
     assert response.status_code == 401
 
 

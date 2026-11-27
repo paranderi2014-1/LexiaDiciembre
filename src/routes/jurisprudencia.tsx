@@ -4,6 +4,7 @@ import { csjSearchSchema } from "@/lib/lexia-legal";
 import { pageHead } from "@/lib/seo";
 import { SectionTitle } from "@/components/lexia/shared";
 import { JurisprudenciaDemo } from "@/components/lexia/demos";
+import { BackendSearch } from "@/components/lexia/BackendSearch";
 
 export const Route = createFileRoute("/jurisprudencia")({
   head: () =>
@@ -25,6 +26,9 @@ function Jurisprudencia() {
       />
       <div className="mt-6">
         <JurisprudenciaDemo />
+      </div>
+      <div className="mt-6">
+        <BackendSearch />
       </div>
     </section>
   );

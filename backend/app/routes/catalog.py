@@ -9,9 +9,8 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.core.security import Identity, get_current_identity
 from app.database.session import get_session
-from app.models.catalog import Articulo, Documento
+from app.models.catalog import Articulo, Documento, Fuente
 from app.schemas.api import (
     ArticuloOut,
     BusquedaOut,
@@ -19,14 +18,38 @@ from app.schemas.api import (
     DocumentoOut,
     DocumentoPagina,
     FragmentoOut,
+    FuenteEstadoOut,
 )
 from app.services.embeddings import EmbeddingsNotConfigured, embed_query
 from app.services.search import hybrid_search
 
-router = APIRouter(prefix="/api", tags=["documentos"], dependencies=[Depends(get_current_identity)])
+router = APIRouter(prefix="/api", tags=["documentos"])
 
 LEY = "ley"
 JURISPRUDENCIA = "jurisprudencia"
+
+
+@router.get("/fuentes", response_model=list[FuenteEstadoOut])
+async def list_fuentes(session: AsyncSession = Depends(get_session)) -> list[FuenteEstadoOut]:
+    """Fuentes oficiales indexadas con su conteo de documentos (lectura pública)."""
+    rows = (
+        await session.execute(
+            select(Fuente, func.count(Documento.id))
+            .outerjoin(Documento, Documento.fuente_id == Fuente.id)
+            .group_by(Fuente.id)
+            .order_by(Fuente.codigo)
+        )
+    ).all()
+    return [
+        FuenteEstadoOut(
+            codigo=fuente.codigo,
+            nombre=fuente.nombre,
+            url_base=fuente.url_base,
+            activo=fuente.activo,
+            documentos=total,
+        )
+        for fuente, total in rows
+    ]
 
 
 async def _paginate(
