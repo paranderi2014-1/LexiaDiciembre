@@ -72,6 +72,27 @@ La ruta rechaza solicitudes sin token y limita la extracción a los dominios ofi
 
 Aplicar en el proyecto Supabase las migraciones de `drizzle/migrations/` en orden. Las políticas RLS incluidas aíslan conversaciones y expedientes por usuario. Revisar también el bucket `lexia-case-files` y las políticas de Storage antes de producción. Configurar el proveedor Google OAuth desde Supabase Auth si se habilita ese acceso.
 
+## API central (Plan Maestro)
+
+`backend/` implementa la arquitectura central del Plan Maestro sin reemplazar nada del
+sitio actual: FastAPI + SQLAlchemy async + Alembic sobre PostgreSQL 16 con pgvector,
+Firebase Authentication para identidad, Redis para caché y un planificador diario de
+actualización de fuentes oficiales.
+
+```bash
+# Con el compose del entorno Base44 ya levantado:
+make test        # 27 pruebas de API, búsqueda híbrida, citas y ETL
+make test-web    # pruebas del frontend (vitest bajo Node)
+make update      # actualización de fuentes (BACN, CSJ, PJ)
+```
+
+Documentación: `docs/arquitectura.md`, `docs/api.md`, `docs/base_datos.md`,
+`docs/seguridad.md`. Variables nuevas en `backend/.env.example`.
+
+Sin `FIREBASE_*` la API responde 503 en las rutas protegidas (no hay modo anónimo) y
+`/api/health` informa `firebase: no_configurado`. Sin `OPENAI_API_KEY` la búsqueda
+textual sigue operativa, pero `/api/chat` responde 503 al no poder generar respuestas.
+
 ## Comprobaciones
 
 ```bash

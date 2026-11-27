@@ -1,0 +1,47 @@
+from app.models.ai import (
+    Auditoria,
+    CacheRespuesta,
+    Configuracion,
+    Consulta,
+    EstadisticaBusqueda,
+    RespuestaIA,
+)
+from app.models.catalog import (
+    Archivo,
+    Articulo,
+    Documento,
+    DocumentoEtiqueta,
+    Etiqueta,
+    Fragmento,
+    Fuente,
+    JurisprudenciaRelacionada,
+    Precedente,
+    ReferenciaNormativa,
+    VersionDocumento,
+)
+from app.models.users import Permiso, Rol, RolPermiso, Usuario, UsuarioRol
+
+__all__ = [
+    "Archivo",
+    "Articulo",
+    "Auditoria",
+    "CacheRespuesta",
+    "Configuracion",
+    "Consulta",
+    "Documento",
+    "DocumentoEtiqueta",
+    "EstadisticaBusqueda",
+    "Etiqueta",
+    "Fragmento",
+    "Fuente",
+    "JurisprudenciaRelacionada",
+    "Permiso",
+    "Precedente",
+    "ReferenciaNormativa",
+    "RespuestaIA",
+    "Rol",
+    "RolPermiso",
+    "Usuario",
+    "UsuarioRol",
+    "VersionDocumento",
+]
