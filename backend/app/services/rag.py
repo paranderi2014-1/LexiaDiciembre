@@ -33,7 +33,13 @@ class RAGResult:
     consulta_id: str | None = None
 
 
-async def _ask_model(pregunta: str, fragments: list[RetrievedFragment]) -> str:
+async def _ask_model(
+    pregunta: str,
+    fragments: list[RetrievedFragment],
+    *,
+    fuero: str = "General",
+    analysis_mode: str = "WEB_SEARCH",
+) -> str:
     if not settings.ai_configured:
         raise ChatNotConfigured("OPENAI_API_KEY no está configurada para el modelo de chat.")
 
@@ -43,7 +49,7 @@ async def _ask_model(pregunta: str, fragments: list[RetrievedFragment]) -> str:
         temperature=0,
         messages=[
             {"role": "system", "content": prompts.SYSTEM_PROMPT},
-            {"role": "user", "content": prompts.build_user_prompt(pregunta, fragments)},
+            {"role": "user", "content": prompts.build_user_prompt(pregunta, fragments, fuero=fuero, analysis_mode=analysis_mode)},
         ],
     )
     return response.choices[0].message.content or ""
@@ -55,6 +61,8 @@ async def answer(
     pregunta: str,
     *,
     canal: str = "web",
+    fuero: str = "General",
+    analysis_mode: str = "WEB_SEARCH",
 ) -> RAGResult:
     started = time.perf_counter()
     version = await indice_version(session)
@@ -119,7 +127,7 @@ async def answer(
             consulta_id=str(consulta.id),
         )
     else:
-        contenido = await _ask_model(pregunta, fragments)
+        contenido = await _ask_model(pregunta, fragments, fuero=fuero, analysis_mode=analysis_mode)
         validado = citaciones.validate_citations(contenido, fragments)
         resultado = RAGResult(
             contenido=validado.contenido,

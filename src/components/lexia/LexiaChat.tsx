@@ -3,7 +3,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQueryClient } from "@tanstack/react-query";
 import type { UIMessage, ChatStatus } from "ai";
-import { ArrowUp, BookOpen, ExternalLink, Plus, ShieldCheck } from "lucide-react";
+import { ArrowUp, BookOpen, ExternalLink, Plus, ShieldCheck, ChevronDown } from "lucide-react";
 import {
   Conversation,
   ConversationContent,
@@ -28,6 +28,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { createThread } from "@/lib/lexia-chat.functions";
 import { isOfficialUrl, streamEventSchema } from "@/lib/lexia-chat";
 import { SOURCES } from "@/lib/lexia-data";
+import { FUEROS } from "@/lib/lexia-catalog";
+import { ANALYSIS_OPTIONS, DEFAULT_ANALYSIS_KEY, getAnalysisOption } from "@/lib/lexia-analysis";
 import { useLexiaAuth } from "./AuthProvider";
 import emblem from "@/assets/lexia-emblem.jpg";
 import { Copy } from "lucide-react";
@@ -43,6 +45,9 @@ export function LexiaChat({
   const [status, setStatus] = useState<ChatStatus>("ready");
   const [input, setInput] = useState("");
   const [error, setError] = useState("");
+  const [fuero, setFuero] = useState<string>(FUEROS[0]);
+  const [analysisMode, setAnalysisMode] = useState<string>(DEFAULT_ANALYSIS_KEY);
+  const [showFuero, setShowFuero] = useState(false);
   const { user, ready } = useLexiaAuth();
   const navigate = useNavigate();
   const create = useServerFn(createThread);
@@ -127,7 +132,7 @@ export function LexiaChat({
           "Content-Type": "application/json",
           Authorization: `Bearer ${data.session.access_token}`,
         },
-        body: JSON.stringify({ threadId, question }),
+        body: JSON.stringify({ threadId, question, fuero, analysisMode }),
         signal: control.signal,
       });
       if (!response.ok || !response.body)
@@ -352,6 +357,50 @@ export function LexiaChat({
             </Button>
           </div>
         )}
+        {/* Selectores de fuero y modo de análisis */}
+        <div className="mb-2 flex flex-wrap items-center gap-2">
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setShowFuero((v) => !v)}
+              className="flex items-center gap-1 rounded-md border px-2.5 py-1 text-xs font-medium text-foreground hover:bg-muted"
+            >
+              {fuero}
+              <ChevronDown size={12} />
+            </button>
+            {showFuero && (
+              <div className="absolute bottom-full left-0 mb-1 z-10 rounded-md border bg-popover p-1 shadow-md">
+                {FUEROS.map((f) => (
+                  <button
+                    key={f}
+                    type="button"
+                    onClick={() => { setFuero(f); setShowFuero(false); }}
+                    className={`block w-full whitespace-nowrap rounded-sm px-3 py-1.5 text-left text-xs hover:bg-accent ${f === fuero ? "font-bold bg-accent" : ""}`}
+                  >
+                    {f}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-1">
+            {ANALYSIS_OPTIONS.map((opt) => (
+              <button
+                key={opt.key}
+                type="button"
+                title={opt.description}
+                onClick={() => setAnalysisMode(opt.key)}
+                className={`rounded-md border px-2 py-1 text-[10px] font-medium transition-colors ${
+                  analysisMode === opt.key
+                    ? "border-gold bg-gold/10 text-navy"
+                    : "border-border text-muted-foreground hover:bg-muted"
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
         <PromptInput onSubmit={({ text }) => send(text)} className="lexia-composer">
           <PromptInputTextarea
             ref={textarea}

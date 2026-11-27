@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 
 from app.core.config import settings
-from app.routes import admin, auth, catalog, chat, health
+from app.routes import admin, analysis, auth, catalog, chat, health
 from app.services.cache import cache
 
 
@@ -37,7 +37,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-for module in (health, auth, chat, catalog, admin):
+for module in (health, auth, chat, catalog, analysis, admin):
     app.include_router(module.router)
 
 

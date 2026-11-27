@@ -157,6 +157,43 @@ export const api = {
       latencia_ms: number;
     }>("/api/chat", { method: "POST", body: JSON.stringify({ pregunta, canal }) }),
   consultas: (limit = 20) => request<unknown[]>(`/api/consultas?limit=${limit}`),
+
+  // --- Análisis jurídico (§12.2) -----------------------------------------
+  contractReview: (contractText: string, fuero: string) =>
+    request<unknown>("/api/analysis/contract-review", {
+      method: "POST",
+      body: JSON.stringify({ contractText, fuero }),
+    }),
+  documentComparison: (versionATitle: string, versionAText: string, versionBTitle: string, versionBText: string, fuero: string) =>
+    request<unknown>("/api/analysis/document-comparison", {
+      method: "POST",
+      body: JSON.stringify({ versionATitle, versionAText, versionBTitle, versionBText, fuero }),
+    }),
+  generateDraft: (templateKey: string, factsAndInstructions: string, fuero: string) =>
+    request<unknown>("/api/analysis/generate-draft", {
+      method: "POST",
+      body: JSON.stringify({ templateKey, factsAndInstructions, fuero }),
+    }),
+  hearingPrep: (hearingTopic: string, fuero: string) =>
+    request<unknown>("/api/analysis/hearing-prep", {
+      method: "POST",
+      body: JSON.stringify({ hearingTopic, fuero }),
+    }),
+  caseExtraction: (documentTitle: string, rawText: string, fuero: string) =>
+    request<unknown>("/api/analysis/case-extraction", {
+      method: "POST",
+      body: JSON.stringify({ documentTitle, rawText, fuero }),
+    }),
+  analogousCases: (caseSummary: string, fuero: string) =>
+    request<unknown>("/api/analysis/analogous-cases", {
+      method: "POST",
+      body: JSON.stringify({ caseSummary, fuero }),
+    }),
+  clientLeadTriage: (clientName: string, legalArea: string, description: string) =>
+    request<unknown>("/api/analysis/client-lead-triage", {
+      method: "POST",
+      body: JSON.stringify({ clientName, legalArea, description }),
+    }),
 };
 
 function toQuery(params: Record<string, unknown>): string {

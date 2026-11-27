@@ -96,6 +96,8 @@ class BusquedaOut(BaseModel):
 class ChatRequest(BaseModel):
     pregunta: str = Field(min_length=3, max_length=4000)
     canal: Literal["web", "android", "api"] = "web"
+    fuero: str = "General"
+    analysis_mode: str = "WEB_SEARCH"
 
 
 class FuenteCitada(BaseModel):

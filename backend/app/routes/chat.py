@@ -22,7 +22,10 @@ async def chat(
     session: AsyncSession = Depends(get_session),
 ) -> ChatResponse:
     try:
-        result = await rag.answer(session, identity, payload.pregunta, canal=payload.canal)
+        result = await rag.answer(
+            session, identity, payload.pregunta, canal=payload.canal,
+            fuero=payload.fuero, analysis_mode=payload.analysis_mode,
+        )
     except rag.ChatNotConfigured as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
 

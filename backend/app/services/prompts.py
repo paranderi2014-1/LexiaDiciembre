@@ -33,5 +33,19 @@ def build_context(fragments: list[RetrievedFragment]) -> str:
     return "\n\n---\n\n".join(blocks)
 
 
-def build_user_prompt(pregunta: str, fragments: list[RetrievedFragment]) -> str:
-    return f"CONTEXTO:\n{build_context(fragments)}\n\nCONSULTA:\n{pregunta}"
+def build_user_prompt(
+    pregunta: str,
+    fragments: list[RetrievedFragment],
+    fuero: str = "General",
+    analysis_mode: str = "WEB_SEARCH",
+) -> str:
+    mode_instructions = {
+        "WEB_SEARCH": "Verifica normativa vigente y jurisprudencia paraguaya en bacn.gov.py, pj.gov.py y csj.gov.py cuando corresponda.",
+        "EXPLAIN": "Explica de forma didáctica, clara y paso a paso, con ejemplos prácticos aplicados al derecho paraguayo.",
+        "DEEP_RESEARCH": "Realiza una investigación jurídica profunda, sistemática y exhaustiva con doctrina, artículos concordantes y análisis procesal.",
+        "CONTRACT_REVIEW": "Analiza cláusula por cláusula señalando riesgos (CRÍTICO/ALTO/MEDIO/BAJO), desequilibrios y mejoras de redacción bajo derecho paraguayo.",
+        "DRAFT_PREP": "Estructura un borrador procesal paraguayo completo con Objeto, Hechos, Derecho, Pruebas y Petitorio, marcando entre corchetes los datos a completar.",
+        "CASE_SUMMARY": "Resume ejecutivamente hechos, partes, montos, plazos críticos, pretensiones, defensas y riesgos procesales en derecho paraguayo.",
+    }
+    extra = mode_instructions.get(analysis_mode, mode_instructions["WEB_SEARCH"])
+    return f"Fuero / Materia: {fuero}\nEnfoque: {extra}\n\nCONTEXTO:\n{build_context(fragments)}\n\nCONSULTA:\n{pregunta}"
