@@ -14,7 +14,14 @@ from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
-from app.models.catalog import Articulo, Documento, Fragmento, Fuente, VersionDocumento
+from app.models.catalog import (
+    Articulo,
+    CambioPendiente,
+    Documento,
+    Fragmento,
+    Fuente,
+    VersionDocumento,
+)
 from app.scrapers.base import ScrapedDocument, split_articles
 from app.scrapers.portals import get_scraper
 from app.services.embeddings import EmbeddingsNotConfigured, embed_texts
@@ -27,6 +34,7 @@ class IngestReport:
     descubiertos: int = 0
     nuevos: int = 0
     actualizados: int = 0
+    pendientes_revision: int = 0
     sin_cambios: int = 0
     fragmentos: int = 0
     errores: list[str] = field(default_factory=list)
@@ -37,6 +45,7 @@ class IngestReport:
             "descubiertos": self.descubiertos,
             "nuevos": self.nuevos,
             "actualizados": self.actualizados,
+            "pendientes_revision": self.pendientes_revision,
             "sin_cambios": self.sin_cambios,
             "fragmentos": self.fragmentos,
             "errores": self.errores,
@@ -151,23 +160,23 @@ async def upsert_documento(
     if existente.hash == huella:
         return existente, "sin_cambios", 0
 
-    session.add(
-        VersionDocumento(
-            documento_id=existente.id,
-            hash=existente.hash,
-            texto=existente.texto,
-            metadatos=existente.metadatos,
-        )
+    # Control de actualizaciones (§18): el cambio se registra como pendiente
+    # de revisión humana. No se actualiza el documento vigente automáticamente.
+    pendiente = CambioPendiente(
+        documento_id=existente.id,
+        fuente_codigo=doc.fuente,
+        url=doc.url,
+        titulo=doc.titulo or existente.titulo,
+        hash_anterior=existente.hash,
+        hash_nuevo=huella,
+        texto_nuevo=texto,
+        texto_anterior=existente.texto,
+        estado="pendiente",
+        metadatos=doc.metadatos,
     )
-    existente.hash = huella
-    existente.texto = texto
-    existente.titulo = doc.titulo or existente.titulo
-    existente.numero = doc.numero or existente.numero
-    existente.metadatos = doc.metadatos
+    session.add(pendiente)
     await session.flush()
-
-    fragmentos = await _index_documento(session, existente)
-    return existente, "actualizado", fragmentos
+    return existente, "pendiente_revision", 0
 
 
 async def run_source(session: AsyncSession, codigo: str, limite: int | None = None) -> IngestReport:
@@ -191,8 +200,8 @@ async def run_source(session: AsyncSession, codigo: str, limite: int | None = No
             report.fragmentos += fragmentos
             if estado == "nuevo":
                 report.nuevos += 1
-            elif estado == "actualizado":
-                report.actualizados += 1
+            elif estado == "pendiente_revision":
+                report.pendientes_revision += 1
             else:
                 report.sin_cambios += 1
             await session.commit()

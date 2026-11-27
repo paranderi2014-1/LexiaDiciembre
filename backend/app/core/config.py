@@ -36,6 +36,9 @@ class Settings(BaseSettings):
     chat_model: str = "gpt-5"
     openai_base_url: str | None = None
 
+    # Firecrawl — motor de investigación documental
+    firecrawl_api_key: str | None = None
+
     # Búsqueda híbrida (§11)
     rag_top_k: int = 10
     bm25_weight: float = 0.4

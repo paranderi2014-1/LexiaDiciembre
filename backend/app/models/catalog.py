@@ -203,3 +203,42 @@ class Precedente(UUIDPrimaryKey, Base):
     )
     tema: Mapped[str] = mapped_column(String(200), nullable=False)
     resumen: Mapped[str] = mapped_column(Text, nullable=False, default="")
+
+
+class CambioPendiente(UUIDPrimaryKey, Timestamps, Base):
+    """Cambio detectado en una fuente oficial, pendiente de revisión humana.
+
+    El ETL detecta diferencias y crea un registro aquí en lugar de actualizar
+    directamente el documento vigente. Solo después de aprobación humana se
+    aplica el cambio al documento y se reindexa.
+    """
+
+    __tablename__ = "cambios_pendientes"
+    __table_args__ = (
+        Index("cambios_pendientes_estado_idx", "estado"),
+        Index("cambios_pendientes_documento_idx", "documento_id"),
+    )
+
+    documento_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("documentos.id", ondelete="SET NULL"), nullable=True
+    )
+    fuente_codigo: Mapped[str] = mapped_column(String(40), nullable=False)
+    url: Mapped[str] = mapped_column(String(1000), nullable=False)
+    titulo: Mapped[str] = mapped_column(String(600), nullable=False, default="")
+    hash_anterior: Mapped[str | None] = mapped_column(String(64))
+    hash_nuevo: Mapped[str] = mapped_column(String(64), nullable=False)
+    texto_nuevo: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    texto_anterior: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    # Tipo de cambio: modificacion | derogacion | sustitucion | correccion | editorial
+    tipo_cambio: Mapped[str | None] = mapped_column(String(40))
+    # Estado: pendiente | aprobado | rechazado
+    estado: Mapped[str] = mapped_column(String(20), nullable=False, default="pendiente")
+    # Acto jurídico que sustenta el cambio (referencia normativa)
+    acto_sustento: Mapped[str | None] = mapped_column(String(600))
+    # Revisión humana
+    revisado_por: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("usuarios.id", ondelete="SET NULL"), nullable=True
+    )
+    revisado_en: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    motivo_revision: Mapped[str | None] = mapped_column(Text)
+    metadatos: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)

@@ -9,6 +9,7 @@ from app.models.ai import (
 from app.models.catalog import (
     Archivo,
     Articulo,
+    CambioPendiente,
     Documento,
     DocumentoEtiqueta,
     Etiqueta,
@@ -25,6 +26,7 @@ __all__ = [
     "Archivo",
     "Articulo",
     "Auditoria",
+    "CambioPendiente",
     "CacheRespuesta",
     "Configuracion",
     "Consulta",
